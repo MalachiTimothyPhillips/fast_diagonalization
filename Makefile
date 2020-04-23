@@ -5,10 +5,10 @@ SHELL = /bin/bash
 DEBUG = -O3
 
 # Compiler flags and variables
-OCCA_INC = -I/ccs/home/belloma2/Programs/OCCA/Master/include
-OCCA_LIB = -L/ccs/home/belloma2/Programs/OCCA/Master/lib -locca
+OCCA_INC = -I${OCCA_DIR}/include
+OCCA_LIB = -L${OCCA_DIR}/lib -locca
 
-CXX = g++
+CXX = mpicxx
 CXX_FLAGS = -Wall
 CXX_INCLUDES = -I./ $(OCCA_INC)
 CXX_LIBRARIES = $(OCCA_LIB) -lm
