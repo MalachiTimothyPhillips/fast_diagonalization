@@ -9,6 +9,7 @@
 #include "utilities.hpp"
 #include "fdm_operator.hpp"
 #include <mpi.h>
+#include <chrono>
 
 // Namespaces
 using namespace std;
@@ -49,6 +50,12 @@ int main(int argc, char *argv[])
     num_points_elem = (dim == 2) ? N * N : N * N * N;
     num_points_total = num_elements * num_points_elem;
 
+    std::cout << "Running with : "
+     << "p = " << p << "\n"
+     << "N = " << N << "\n"
+     << "num_elements = " << num_elements << "\n"
+     << "num_tests = " << num_tests << "\n";
+
     work_hst_1 = new double[num_points_total];
     work_hst_2 = new double[num_points_total];
     work_dev_1 = device.malloc<double>(num_points_total);
@@ -79,14 +86,15 @@ int main(int argc, char *argv[])
 
     device.finish();
     MPI_Barrier(MPI_COMM_WORLD);
-    const double start = MPI_Wtime();
+    auto t1 = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < num_tests; i++)
     {
         fdm_operator.apply(Su, u);
         device.finish();
     }
     MPI_Barrier(MPI_COMM_WORLD);
-    const double elapsed = (MPI_Wtime() - start)/num_tests;
+    auto t2 = std::chrono::high_resolution_clock::now();
+    const double elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(t2-t1).count()/static_cast<double>(num_tests);
     const long long bytesMoved = (3*N*N*N+3*N*N)*sizeof(double);
     const double bw = (bytesMoved*num_elements/elapsed)/1.e9;
     const double flopCount = (12*N*N*N*N+N*N*N)*num_elements;
