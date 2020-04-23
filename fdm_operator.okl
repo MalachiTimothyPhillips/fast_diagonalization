@@ -24,7 +24,7 @@
     }
 }
 
-@kernel void fdm_operator(double *Su, double *S_x, double *S_y, double *S_z, double *inv_L, double *u)
+@kernel void fdm_operator(@restrict double *Su, @restrict const double *S_x, @restrict const double *S_y, @restrict const double *S_z, @restrict const double *inv_L, @restrict const double *u)
 {
     for (int block = 0; block < NUM_POINTS_TOTAL; block += NUM_POINTS_ELEM; @outer)
     {
@@ -41,11 +41,10 @@
             {
                 for (int i = 0; i < N; i++; @inner)
                 {
-                    int e = block / NUM_POINTS_ELEM;
                     int v = i + j * N + k * N2;
-                    int ij = i + j * N;
                     int idx = block + v;
-
+                    int e = block / NUM_POINTS_ELEM;
+                    int ij = i + j * N;
                     S_x_e[ij] = S_x[ij + e * N2];
                     S_y_e[ij] = S_y[ij + e * N2];
                     S_z_e[ij] = S_z[ij + e * N2];
@@ -62,9 +61,10 @@
                 {
                     int e = block / NUM_POINTS_ELEM;
                     int v = i + j * N + k * N2;
-                    double *u_e = u + block;
                     double value = 0.0;
+                    const double *u_e = u + block;
 
+                    #pragma unroll
                     for (int l = 0; l < N; l++)
                         value += S_x_e[l * N + i] * u_e[l + j * N + k * N2];
 
@@ -83,6 +83,7 @@
                     int v = i + j * N + k * N2;
                     double value = 0.0;
 
+                    #pragma unroll
                     for (int l = 0; l < N; l++)
                         value += S_y_e[l * N + j] * work_1[i + l * N + k * N2];
 
@@ -101,6 +102,7 @@
                     int v = i + j * N + k * N2;
                     double value = 0.0;
 
+                    #pragma unroll
                     for (int l = 0; l < N; l++)
                         value += S_z_e[l * N + k] * work_2[i + j * N + l * N2];
 
@@ -117,9 +119,9 @@
                 {
                     int e = block / NUM_POINTS_ELEM;
                     int v = i + j * N + k * N2;
-                    double *u_e = u + block;
                     double value = 0.0;
 
+                    #pragma unroll
                     for (int l = 0; l < N; l++)
                         value += S_x_e[i * N + l] * work_1[l + j * N + k * N2];
 
@@ -138,6 +140,7 @@
                     int v = i + j * N + k * N2;
                     double value = 0.0;
 
+                    #pragma unroll
                     for (int l = 0; l < N; l++)
                         value += S_y_e[j * N + l] * work_2[i + l * N + k * N2];
 
@@ -157,6 +160,7 @@
                     double *Su_e = Su + block;
                     double value = 0.0;
 
+                    #pragma unroll
                     for (int l = 0; l < N; l++)
                         value += S_z_e[k * N + l] * work_1[i + j * N + l * N2];
 
