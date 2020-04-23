@@ -21,7 +21,7 @@ FC_LIBRARIES = -lgfortran -lm
 LD_FLAGS = $(CXX_FLAGS)
 
 # Source files
-SRCS_CXX = fast_diagonalization.cpp fdm_operator.cpp utilities.cpp timer.cpp
+SRCS_CXX = fast_diagonalization.cpp fdm_operator.cpp utilities.cpp
 SRCS_FC = mxm.f
 OBJS = $(SRCS_CXX:.cpp=.o) $(SRCS_FC:.f=.o)
 

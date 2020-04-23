@@ -54,7 +54,7 @@ class FDM_Operator
 
         // Functions
         void build();
-        void apply(occa::memory, occa::memory, bool = false);
+        void apply(occa::memory, occa::memory);
 };
 
 #endif

@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
     // spin the device
     for (int i = 0; i < num_tests/10; i++)
     {
-        fdm_operator.apply(Su, u, false);
+        fdm_operator.apply(Su, u);
         device.finish();
     }
 
@@ -80,6 +80,18 @@ int main(int argc, char *argv[])
         device.finish();
     }
     auto t2 = std::chrono::high_resolution_clock::now();
-    auto time = std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count()/static_cast<double>(num_tests);
+    auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(t2-t1).count()/static_cast<double>(num_tests);
+    const long long bytesMoved = (3*N*N*N+3*N*N)*sizeof(double);
+    const double bw = (bytesMoved*num_elements/elapsed)/1.e9;
+    const double flopCount = (12*N*N*N*N+N*N*N)*num_elements;
+    const double gflops = (flopCount/elapsed)/1.e9;
+    const double dofs = num_elements*(p+1)*(p+1)*(p+1); // don't count the extension as a true dof
+    std::cout << p
+      << ", " << num_elements
+      << ", " << elapsed
+      << ", " << gflops
+      << ", " << bw
+      << ", " << dofs
+      << "\n";
     return EXIT_SUCCESS;
 }
