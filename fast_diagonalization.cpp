@@ -8,7 +8,7 @@
 
 #include "utilities.hpp"
 #include "fdm_operator.hpp"
-#include "timer.hpp"
+#include <chrono>
 
 // Namespaces
 using namespace std;
@@ -16,7 +16,9 @@ using namespace std;
 // Global variable
 int dim;
 int N;
+int p;
 int num_elements;
+int num_tests;
 int num_points_elem;
 int num_points_total;
 
@@ -32,14 +34,16 @@ int main(int argc, char *argv[])
 {
     // Initialize OCCA
     occa::device device;
-    device.setup("mode: 'CUDA', device_id: 0");
+    device.setup("mode: 'CUDA', device_id: 1");
 
     timer.set_device(device);
 
     // Runtime parameters
     dim = 3;
-    N = atoi(argv[1]);
+    p = atoi(argv[1]);
+    N = p+3;
     num_elements = atoi(argv[2]);
+    num_tests = atoi(argv[3]);
     num_points_elem = (dim == 2) ? N * N : N * N * N;
     num_points_total = num_elements * num_points_elem;
 
@@ -64,18 +68,21 @@ int main(int argc, char *argv[])
     // Apply the FDM operator
     occa::memory Su = device.malloc<double>(num_points_total);
 
-    int num_tests = 10;
-
-    for (int i = 0; i < num_tests; i++)
+    // spin the device
+    for (int i = 0; i < num_tests/10; i++)
     {
-        timer.reset("fdm");
-        timer.start("fdm");
         fdm_operator.apply(Su, u, false);
-        timer.stop("fdm");
-
-        printf("FDM time: %8.4e\n", timer.total("fdm"));
+        device.finish();
     }
 
-    // End of program
+    device.finish();
+    auto t1 = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < num_tests; i++)
+    {
+        fdm_operator.apply(Su, u, false);
+        device.finish();
+    }
+    auto t2 = std::chrono::high_resolution_clock::now();
+    auto time = std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count()/static_cast<double>(num_tests);
     return EXIT_SUCCESS;
 }
