@@ -27,7 +27,6 @@ double *work_hst_2;
 occa::memory work_dev_1;
 occa::memory work_dev_2;
 
-Timer timer;
 
 // Main program
 int main(int argc, char *argv[])
@@ -35,8 +34,6 @@ int main(int argc, char *argv[])
     // Initialize OCCA
     occa::device device;
     device.setup("mode: 'CUDA', device_id: 1");
-
-    timer.set_device(device);
 
     // Runtime parameters
     dim = 3;
@@ -79,7 +76,7 @@ int main(int argc, char *argv[])
     auto t1 = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < num_tests; i++)
     {
-        fdm_operator.apply(Su, u, false);
+        fdm_operator.apply(Su, u);
         device.finish();
     }
     auto t2 = std::chrono::high_resolution_clock::now();

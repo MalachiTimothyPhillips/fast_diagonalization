@@ -7,7 +7,6 @@
 #include <occa.hpp>
 #include "fdm_operator.hpp"
 #include "utilities.hpp"
-#include "timer.hpp"
 
 // Namespaces
 using namespace std;
@@ -18,7 +17,6 @@ extern double *work_hst_2;
 extern occa::memory work_dev_1;
 extern occa::memory work_dev_2;
 
-extern Timer timer;
 
 // Constructor
 FDM_Operator::FDM_Operator(int dim_, int num_elements_, int N_, occa::device device_) :
@@ -150,7 +148,7 @@ void FDM_Operator::build()
     lambda_inverse_kernel(inv_L, L_x, L_y, L_z);
 }
 
-void FDM_Operator::apply(occa::memory Su, occa::memory u, bool cummulative_timer)
+void FDM_Operator::apply(occa::memory Su, occa::memory u)
 {
     fdm_operator_kernel(Su, S_x, S_y, S_z, inv_L, u);
 }
