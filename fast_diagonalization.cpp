@@ -8,7 +8,7 @@
 
 #include "utilities.hpp"
 #include "fdm_operator.hpp"
-#include <chrono>
+#include <mpi.h>
 
 // Namespaces
 using namespace std;
@@ -31,6 +31,11 @@ occa::memory work_dev_2;
 // Main program
 int main(int argc, char *argv[])
 {
+
+    int rank = 0, size = 1;
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
     // Initialize OCCA
     occa::device device;
     device.setup("mode: 'CUDA', device_id: 1");
@@ -73,14 +78,15 @@ int main(int argc, char *argv[])
     }
 
     device.finish();
-    auto t1 = std::chrono::high_resolution_clock::now();
+    MPI_Barrier(MPI_COMM_WORLD);
+    const double start = MPI_Wtime();
     for (int i = 0; i < num_tests; i++)
     {
         fdm_operator.apply(Su, u);
         device.finish();
     }
-    auto t2 = std::chrono::high_resolution_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(t2-t1).count()/static_cast<double>(num_tests);
+    MPI_Barrier(MPI_COMM_WORLD);
+    const double elapsed = (MPI_Wtime() - start)/num_tests;
     const long long bytesMoved = (3*N*N*N+3*N*N)*sizeof(double);
     const double bw = (bytesMoved*num_elements/elapsed)/1.e9;
     const double flopCount = (12*N*N*N*N+N*N*N)*num_elements;
@@ -93,5 +99,6 @@ int main(int argc, char *argv[])
       << ", " << bw
       << ", " << dofs
       << "\n";
+    MPI_Finalize();
     return EXIT_SUCCESS;
 }
