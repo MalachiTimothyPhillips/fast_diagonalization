@@ -10,6 +10,7 @@
 #include "fdm_operator.hpp"
 #include <mpi.h>
 #include <chrono>
+#include <math.h>
 
 // Namespaces
 using namespace std;
@@ -54,12 +55,6 @@ int main(int argc, char *argv[])
     num_points_elem = (dim == 2) ? N * N : N * N * N;
     num_points_total = num_elements * num_points_elem;
 
-    std::cout << "Running with : "
-     << "p = " << p << "\n"
-     << "N = " << N << "\n"
-     << "num_elements = " << num_elements << "\n"
-     << "num_tests = " << num_tests << "\n";
-
     work_hst_1 = new double[num_points_total];
     work_hst_2 = new double[num_points_total];
     work_dev_1 = device.malloc<double>(num_points_total);
@@ -88,17 +83,37 @@ int main(int argc, char *argv[])
         device.finish();
     }
 
-    device.finish();
-    MPI_Barrier(MPI_COMM_WORLD);
-    auto t1 = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < num_tests; i++)
-    {
-        fdm_operator.apply(Su, u);
-        device.finish();
+    // TODO: make run time parameter, too
+    int meas_max = 10;
+    double times[meas_max];
+    for(int meas = 0; meas < meas_max; ++meas){
+      device.finish();
+      MPI_Barrier(MPI_COMM_WORLD);
+      auto t1 = std::chrono::high_resolution_clock::now();
+      for (int i = 0; i < num_tests; i++)
+      {
+          fdm_operator.apply(Su, u);
+          device.finish();
+      }
+      MPI_Barrier(MPI_COMM_WORLD);
+      auto t2 = std::chrono::high_resolution_clock::now();
+      const double elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(t2-t1).count()/static_cast<double>(num_tests);
+      times[meas] = elapsed;
     }
-    MPI_Barrier(MPI_COMM_WORLD);
-    auto t2 = std::chrono::high_resolution_clock::now();
-    const double elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(t2-t1).count()/static_cast<double>(num_tests);
+
+    // compute average measurement time
+    double elapsed = 0.0;
+    for(int meas = 0 ; meas < meas_max; ++meas){
+        elapsed += times[meas];
+    }
+    elapsed /= static_cast<double>(meas_max);
+    // compute std. dev
+    double stddev = 0.0;
+    for(int meas = 0; meas < meas_max; ++meas){
+        const double kern = times[meas]-elapsed;
+        stddev += kern*kern;
+    }
+    stddev = std::sqrt(stddev/(static_cast<double>(meas_max)-1));
     const double nf = static_cast<double>(N);
     const long long bytesMoved = (3.0*nf*nf*nf+3.0*nf*nf)*sizeof(double);
     const double bw = (bytesMoved*num_elements/elapsed)/1.e9;
@@ -108,6 +123,7 @@ int main(int argc, char *argv[])
     std::cout << p
       << ", " << num_elements
       << ", " << elapsed
+      << ", " << stddev
       << ", " << flopCount
       << ", " << bytesMoved
       << ", " << gflops
