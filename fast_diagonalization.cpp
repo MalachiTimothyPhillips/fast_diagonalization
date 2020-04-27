@@ -32,7 +32,10 @@ occa::memory work_dev_2;
 // Main program
 int main(int argc, char *argv[])
 {
-
+    if(argc != 4){
+        std::cout << "Usage: ./fast_diagonalization p E ntrial\n";
+        exit(0);
+    }
     int rank = 0, size = 1;
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);

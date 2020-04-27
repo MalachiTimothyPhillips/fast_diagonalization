@@ -183,7 +183,7 @@
         @shared double work_1[NUM_POINTS_ELEM];
         @shared double work_2[NUM_POINTS_ELEM];
 
-        for (int k = 0; k < 1; k++; @inner)
+        for (int k = 0; k < N; k++; @inner)
         {
             for (int j = 0; j < N; j++; @inner)
             {
