@@ -1,7 +1,6 @@
 /*
  * FDM Operator kernels
  */
-
 @kernel void lambda_inverse(double *inv_L, double *L_x, double *L_y, double *L_z)
 {
     for (int idx = 0; idx < NUM_POINTS_TOTAL; idx++; @tile(256, @outer, @inner))
@@ -179,7 +178,7 @@
         @shared double S_x_e[N2];
         @shared double S_y_e[N2];
         @shared double S_z_e[N2];
-        //@shared double inv_L_e[NUM_POINTS_ELEM];
+        @shared double inv_L_e[NUM_POINTS_ELEM];
         @shared double work_1[NUM_POINTS_ELEM];
         @shared double work_2[NUM_POINTS_ELEM];
 
@@ -196,7 +195,7 @@
                     S_x_e[ij] = S_x[ij + e * N2];
                     S_y_e[ij] = S_y[ij + e * N2];
                     S_z_e[ij] = S_z[ij + e * N2];
-                    //inv_L_e[v] = inv_L[idx];
+                    inv_L_e[v] = inv_L[idx];
                 }
             }
         }
@@ -254,7 +253,8 @@
                     for (int l = 0; l < N; l++)
                         value += S_z_e[l * N + k] * work_2[i + j * N + l * N2];
 
-                    work_1[v] = value * inv_L[v+block];
+                    //work_1[v] = value * inv_L[v+block];
+                    work_1[v] = value;
                 }
             }
         }
