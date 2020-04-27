@@ -42,7 +42,8 @@ int main(int argc, char *argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     // Initialize OCCA
     occa::device device;
-    device.setup("mode: 'CUDA', device_id: 1");
+    //device.setup("mode: 'CUDA', device_id: 1");
+    device.setup("mode: 'Serial'");
 
     // Runtime parameters
     dim = 3;
