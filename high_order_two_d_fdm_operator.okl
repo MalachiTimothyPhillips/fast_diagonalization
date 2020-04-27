@@ -1,4 +1,4 @@
-@kernel void high_order_fdm_operator(@restrict double *Su, @restrict const double *S_x, @restrict const double *S_y, @restrict const double *S_z, @restrict const double *inv_L, @restrict const double *u)
+@kernel void high_order_two_d_fdm_operator(@restrict double *Su, @restrict const double *S_x, @restrict const double *S_y, @restrict const double *S_z, @restrict const double *inv_L, @restrict const double *u)
 {
     for (int block = 0; block < NUM_POINTS_TOTAL; block += NUM_POINTS_ELEM; @outer)
     {
