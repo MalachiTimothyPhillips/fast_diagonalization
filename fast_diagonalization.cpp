@@ -99,14 +99,17 @@ int main(int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);
     auto t2 = std::chrono::high_resolution_clock::now();
     const double elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(t2-t1).count()/static_cast<double>(num_tests);
-    const long long bytesMoved = (3*N*N*N+3*N*N)*sizeof(double);
+    const double nf = static_cast<double>(N);
+    const long long bytesMoved = (3.0*nf*nf*nf+3.0*nf*nf)*sizeof(double);
     const double bw = (bytesMoved*num_elements/elapsed)/1.e9;
-    const double flopCount = (12*N*N*N*N+N*N*N)*num_elements;
+    const double flopCount = (12.0*nf*nf*nf*nf+nf*nf*nf)*num_elements;
     const double gflops = (flopCount/elapsed)/1.e9;
     const double dofs = num_elements*(p+1)*(p+1)*(p+1); // don't count the extension as a true dof
     std::cout << p
       << ", " << num_elements
       << ", " << elapsed
+      << ", " << flopCount
+      << ", " << bytesMoved
       << ", " << gflops
       << ", " << bw
       << ", " << dofs
