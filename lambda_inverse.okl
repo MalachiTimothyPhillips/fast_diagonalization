@@ -1,0 +1,24 @@
+/*
+ * FDM Operator kernels
+ */
+@kernel void lambda_inverse(double *inv_L, double *L_x, double *L_y, double *L_z)
+{
+    for (int idx = 0; idx < NUM_POINTS_TOTAL; idx++; @tile(256, @outer, @inner))
+    {
+        int e = idx / NUM_POINTS_ELEM;
+        int v = idx % NUM_POINTS_ELEM;
+
+#if DIM == 2
+        int i = v % N;
+        int j = v / N;
+
+        inv_L[idx] = 1.0 / L_x[e * N + i] + 1.0 / L_y[e * N + j];
+#else
+        int i = v % N;
+        int j = (v / N) % N;
+        int k = v / N2;
+
+        inv_L[idx] = 1.0 / L_x[e * N + i] + 1.0 / L_y[e * N + j] + 1.0 / L_z[e * N + k];
+#endif
+    }
+}

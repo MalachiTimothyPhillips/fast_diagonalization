@@ -53,11 +53,11 @@ FDM_Operator::FDM_Operator(int dim_, int num_elements_, int N_, occa::device dev
     properties["defines/NUM_POINTS_TOTAL"] = num_points_total;
     properties["defines/NUM_POINTS_ELEM"] = num_points_elem;
 
-    lambda_inverse_kernel = device.buildKernel("fdm_operator.okl", "lambda_inverse", properties);
+    lambda_inverse_kernel = device.buildKernel("lambda_inverse.okl", "lambda_inverse", properties);
     if(N <= 12){
-      fdm_operator_kernel = device.buildKernel("fdm_operator.okl", "two_d_fdm_operator", properties);
+      fdm_operator_kernel = device.buildKernel("two_d_fdm_operator.okl", "two_d_fdm_operator", properties);
     } else {
-      fdm_operator_kernel = device.buildKernel("fdm_operator.okl", "high_order_two_d_fdm_operator", properties);
+      fdm_operator_kernel = device.buildKernel("high_order_two_d_fdm_operator.okl", "high_order_two_d_fdm_operator", properties);
     }
 }
 
