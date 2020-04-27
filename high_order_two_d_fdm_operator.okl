@@ -5,8 +5,8 @@
         @shared double S_x_e[N2];
         @shared double S_y_e[N2];
         @shared double S_z_e[N2];
-        @shared double work_1[NUM_POINTS_ELEM];
-        @shared double work_2[NUM_POINTS_ELEM];
+        @exclusive double lreg1[N];
+        @exclusive double lreg2[N];
 
         for (int k = 0; k < N; k++; @inner)
         {
@@ -42,7 +42,7 @@
                     for (int l = 0; l < N; l++)
                         value += S_x_e[l * N + i] * u_e[l + j * N + k * N2];
 
-                    work_1[v] = value;
+                    lreg1[i] = value;
                 }
             }
         }
@@ -60,9 +60,9 @@
 
                     #pragma unroll
                     for (int l = 0; l < N; l++)
-                        value += S_y_e[l * N + j] * work_1[i + l * N + k * N2];
+                        value += S_y_e[l * N + j] * lreg1[l];
 
-                    work_2[v] = value;
+                    lreg2[i] = value;
                 }
             }
         }
@@ -80,9 +80,9 @@
 
                     #pragma unroll
                     for (int l = 0; l < N; l++)
-                        value += S_z_e[l * N + k] * work_2[i + j * N + l * N2];
+                        value += S_z_e[l * N + k] * lreg2[l];
 
-                    work_1[v] = value * inv_L[v+block];
+                    lreg1[i] = value * inv_L[v+block];
                 }
             }
         }
@@ -100,9 +100,9 @@
 
                     #pragma unroll
                     for (int l = 0; l < N; l++)
-                        value += S_x_e[i * N + l] * work_1[l + j * N + k * N2];
+                        value += S_x_e[i * N + l] * lreg1[l];
 
-                    work_2[v] = value;
+                    lreg2[i] = value;
                 }
             }
         }
@@ -120,9 +120,9 @@
 
                     #pragma unroll
                     for (int l = 0; l < N; l++)
-                        value += S_y_e[j * N + l] * work_2[i + l * N + k * N2];
+                        value += S_y_e[j * N + l] * lreg2[l];
 
-                    work_1[v] = value;
+                    lreg1[i] = value;
                 }
             }
         }
@@ -141,7 +141,7 @@
 
                     #pragma unroll
                     for (int l = 0; l < N; l++)
-                        value += S_z_e[k * N + l] * work_1[i + j * N + l * N2];
+                        value += S_z_e[k * N + l] * lreg1[l];
 
                     Su_e[v] = value;
                 }
