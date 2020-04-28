@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
       << ", " << elapsed
       << ", " << stddev
       << ", " << flopCount
-      << ", " << bytesMoved
+      << ", " << bytesMoved*num_elements
       << ", " << gflops
       << ", " << bw
       << ", " << dofs
